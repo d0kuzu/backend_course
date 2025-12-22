@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>BMI Calculator — Minimal</title>
+  <style>
+      :root{--bg:#f7f7f8;--card:#fff;--text:#111}
+      *{box-sizing:border-box}
+      body{font-family:Inter, system-ui, Arial, sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg);color:var(--text);margin:0}
+      .card{background:var(--card);padding:28px;border-radius:12px;box-shadow:0 6px 20px rgba(12,16,20,0.06);width:360px;max-width:94%}
+      h1{font-size:18px;margin:0 0 12px}
+      form{display:grid;gap:10px}
+      label{font-size:13px;color:#555}
+      input[type="number"]{width:100%;padding:10px;border-radius:8px;border:1px solid #e6e6e9;font-size:14px}
+      .row{display:flex;gap:10px}
+      button{appearance:none;border:0;padding:10px 12px;border-radius:8px;background:#111;color:#fff;font-weight:600;cursor:pointer}
+      .muted{font-size:12px;color:#888;margin-top:6px}
+
+      /* modal */
+      .modal-backdrop{position:fixed;inset:0;background:rgba(2,6,23,0.45);display:none;align-items:center;justify-content:center;padding:20px}
+      .modal{background:var(--card);padding:20px;border-radius:10px;min-width:260px;max-width:520px;box-shadow:0 10px 40px rgba(2,6,23,0.25)}
+      .result-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+      .bmi-value{font-size:28px;font-weight:700}
+      .badge{padding:6px 10px;border-radius:999px;color:#fff;font-weight:700}
+      .close{margin-top:14px;width:100%;background:#eee;color:#111;padding:10px;border-radius:8px;border:0;cursor:pointer}
+
+      /* colors for categories */
+      .underweight{background:#3b82f6} /* blue */
+      .normal{background:#10b981} /* green */
+      .overweight{background:#f59e0b} /* orange */
+      .obese{background:#ef4444} /* red */
+
+      @media (max-width:420px){.card{padding:18px}}
+  </style>
+</head>
+<body>
+<main class="card" role="main">
+  <h1>BMI Calculator</h1>
+  <form id="bmiForm">
+    <div>
+      <label for="weight">Weight (kg)</label>
+      <input id="weight" name="weight" type="number" min="1" step="0.1" required placeholder="For example: 70" />
+    </div>
+    <div>
+      <label for="height">Height (cm)</label>
+      <input id="height" name="height" type="number" min="30" step="0.1" required placeholder="For example: 175" />
+    </div>
+    <div class="row">
+      <button type="submit">Calculate</button>
+      <button type="reset" class="muted">Reset</button>
+    </div>
+  </form>
+</main>
+
+<!-- Modal -->
+<div id="backdrop" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <div class="modal">
+    <div class="result-row">
+      <div>
+        <div id="modalTitle" style="font-size:13px;color:#666">Your BMI</div>
+        <div class="bmi-value" id="bmiVal">--</div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
+        <div id="categoryBadge" class="badge">--</div>
+      </div>
+    </div>
+    <button id="closeBtn" class="close">Close</button>
+  </div>
+</div>
+
+<script>
+  const ENDPOINT = 'http://localhost:3000/get_bmi';
+
+  const form = document.getElementById('bmiForm');
+  const backdrop = document.getElementById('backdrop');
+  const bmiValEl = document.getElementById('bmiVal');
+  const badge = document.getElementById('categoryBadge');
+  const closeBtn = document.getElementById('closeBtn');
+
+  function showModal(bmi, categoryKey, categoryLabel){
+    bmiValEl.textContent = (typeof bmi === 'number') ? bmi.toFixed(1) : '--';
+    badge.textContent = categoryLabel;
+
+    badge.className = 'badge';
+    if (categoryKey && ['underweight','normal','overweight','obese'].includes(categoryKey)){
+      badge.classList.add(categoryKey);
+    }
+    backdrop.style.display = 'flex';
+    closeBtn.focus();
+  }
+
+  function hideModal(){
+    backdrop.style.display = 'none';
+  }
+
+  closeBtn.addEventListener('click', hideModal);
+  backdrop.addEventListener('click', (e)=>{ if (e.target === backdrop) hideModal(); });
+
+  form.addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    const weight = parseFloat(form.weight.value);
+    const height = parseFloat(form.height.value);
+    if (!weight || !height) return;
+
+    if (ENDPOINT){
+      try{
+        const res = await fetch(ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ weight, height })
+        });
+        if (!res.ok) throw new Error('network');
+        const data = await res.json();
+        const value = typeof data.value === 'number' ? Math.round(data.value*10)/10 : null;
+        const cat = typeof data.category === 'string' ? data.category : '--';
+
+        let key = 'unknown';
+        if (/under/i.test(cat)) key = 'underweight';
+        else if (/norm/i.test(cat)) key = 'normal';
+        else if (/overweight/i.test(cat)) key = 'overweight';
+        else if (/obes/i.test(cat)) key = 'obese';
+        showModal(value, key, cat);
+      } catch (err){
+        console.warn('POST failed, falling back to local calculation', err);
+        alert("Something went wrong")
+      }
+    }
+  });
+
+  document.addEventListener('keydown', (e)=>{ if (e.key === 'Escape') hideModal(); });
+</script>
+</body>
+</html>
