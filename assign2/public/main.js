@@ -4,7 +4,7 @@ loadBtn.addEventListener("click", async () => {
     clearSections();
 
     try {
-        const response = await fetch("localhost:3000/api/user");
+        const response = await fetch("http://localhost:3000/api/user/");
         const data = await response.json();
 
         renderUser(data.user);
@@ -65,7 +65,7 @@ function renderNews(newsList) {
     newsList.forEach(news => {
         container.innerHTML += `
             <div class="news-card">
-                ${news.image ? `<img src="${news.image}" />` : ""}
+                ${news.urlToImage ? `<img src="${news.urlToImage}" />` : ""}
                 <h3>${news.title}</h3>
                 <p>${news.description || "No description available."}</p>
                 <a href="${news.url}" target="_blank">Read more</a>

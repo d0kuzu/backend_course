@@ -5,5 +5,6 @@ require("dotenv").config({
 
 module.exports = {
     COUNTRYLAYER_API: process.env.COUNTRYLAYER_API,
-    EXCANHGERATE_API: process.env.EXCANHGERATE_API
+    EXCANHGERATE_API: process.env.EXCANHGERATE_API,
+    NEWS_API: process.env.NEWS_API
 };
