@@ -1,19 +1,28 @@
-export let users = []
-export let id_counter = 0
+export let users = [];
+export let id_counter = 0;
 
 export class DB {
   static create(name) {
     users.push({ ID: id_counter, name: name })
-    id_counter++
+    id_counter++;
   }
 
   static update(id, name){
-    users.some(user => { if (user.id === id) user.name = name; })
+    if (users.some(user => user.ID === id))
+    {
+      users.forEach((user) => {
+        if (user.ID === id) user.name = name;
+      });
+      return true;
+    }
+    return false;
   }
 
   static delete(id) {
-    if (users.find(user => user.id === id)) return -1;
-    users = users.filter((user) => user.id !== id)
-    return 1;
+    if (users.some(user => user.ID === id)){
+      users = users.filter((user) => user.ID !== id);
+      return true;
+    }
+    return false;
   }
 }

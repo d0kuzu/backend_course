@@ -55,6 +55,7 @@ function renderExchange(rates) {
         <h2>Exchange Rates</h2>
         <p>1 ${rates.base} = ${rates.USD} USD</p>
         <p>1 ${rates.base} = ${rates.KZT} KZT</p>
+        <p>1 ${rates.base} = ${rates.EUR} KZT</p>
     `;
 }
 

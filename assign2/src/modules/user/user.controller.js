@@ -17,7 +17,6 @@ exports.getUser = async (req, res, next) => {
             country: result.location.country,
             address: `${result.location.street.name} ${result.location.street.number}`
         }
-        console.log(user)
 
         let countryName = user.country
         let countryResponse = await fetch(`https://restcountries.com/v3.1/name/${countryName}`)
@@ -31,10 +30,8 @@ exports.getUser = async (req, res, next) => {
             flag: result.flags.svg,
             code: result.cca2,
         }
-        console.log(country)
 
         let countryCurrency = Object.keys(result.currencies)[0]
-        console.log(countryCurrency)
         let exchangerateResponse = await fetch(`https://v6.exchangerate-api.com/v6/latest/${countryCurrency}`, {
             method: "GET",
             headers: {
@@ -43,12 +40,13 @@ exports.getUser = async (req, res, next) => {
         })
         let exchangerateData = await exchangerateResponse.json()
         result = exchangerateData
+        console.log(result)
         let rates = {
             base: countryCurrency,
             KZT: result.conversion_rates.KZT,
             USD: result.conversion_rates.USD,
+            EUR: result.conversion_rates.EUR,
         }
-        console.log(rates)
 
         let countryCode = "US"
         let newsResponse = await fetch(`https://newsapi.org/v2/top-headlines?country=${countryCode}`, {
@@ -67,8 +65,7 @@ exports.getUser = async (req, res, next) => {
             exchangeRates: rates,
             news: news,
         }
-        console.log("___________________________-")
-        console.log(answer)
+
 
         res.status(200).json(answer);
     } catch (err) {

@@ -29,19 +29,35 @@ app.get('/users', (req, res) => {
 })
 app.post('/users', (req, res) => {
   const { name } = req.body
+  if (!name) {
+    return res.status(400).json({ message: 'name is required' });
+  }
 
   DB.create(name)
 
-  res.status(201).json({status: "ok"});
+  res.status(201).json({status: "data accepted"});
 })
 app.put('/users/:id', (req, res) => {
-  const { id } = req.params;
+  const id = req.params.id;
   const { name } = req.body
-  DB.update(id, name)
+  if (!id || !name) {
+    return res.status(400).json({message: 'id and name are required'});
+  }
+
+  if (DB.update(Number(id), name)) {
+    res.status(201).json({ status: 'data changed' });
+  }
+  else {
+    res.status(404).send('data change error');
+  }
+
 })
 app.delete('/users/:id', (req, res) => {
-  const { id } = req.params;
-  if (DB.delete(id)) res.json({status: "ok"});
+  const id = req.params.id;
+  if (!id) {
+    return res.status(400).json({ message: 'id is required' });
+  }
+  if (DB.delete(Number(id))) res.json({status: "ok"});
   else res.json({status: "user does not exist"});
 
 })
